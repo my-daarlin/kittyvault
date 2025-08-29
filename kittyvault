@@ -69,6 +69,7 @@ read -s -p "Enter vault password: " password
 
 # Veracrypt ----------------------------------------------------------------------------------
 
+echo -e "\n --- Veracrypt --- "
 veracrypt --text --create \
     "$SELECTED_DISK" \
     --volume-type normal \
@@ -78,3 +79,4 @@ veracrypt --text --create \
     --password "$password" \
     --quick \
     --non-interactive
+echo -e "\n --- Veracrypt --- "
