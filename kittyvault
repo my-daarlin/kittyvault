@@ -7,6 +7,7 @@ set -euo pipefail
 # --------------------------------------------------------------------------------------------
 
 SELECTED_DISK=""
+DEPENDENCIES=("lolcat" "veracrypt")
 
 # User input ---------------------------------------------------------------------------------
 
@@ -37,6 +38,20 @@ print_header() {
 EOF
 }
 
+ensure_installed() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        echo "Missing dependency: $1"
+        exit 1
+    fi
+}
+
+ensure_set() {
+    if [[ -z "$1" ]]; then
+        echo "FATAL: $2 is not set!"
+        exit 1
+    fi
+}
+
 select_disk() {
     disks=($(diskutil list | grep "external" | awk '{print $1}' || true))
     if [[ ${#disks[@]} -eq 0 ]]; then
@@ -53,6 +68,12 @@ select_disk() {
 }
 
 # --------------------------------------------------------------------------------------------
+# Dependencies -------------------------------------------------------------------------------
+
+for dep in "${DEPENDENCIES[@]}"; do
+    ensure_installed "$dep"
+done
+
 # Permissions --------------------------------------------------------------------------------
 
 print_header
@@ -66,10 +87,16 @@ fi
 select_disk
 echo "Selected disk $SELECTED_DISK"
 read -s -p "Enter vault password: " password
+echo ""
+
+# Value check --------------------------------------------------------------------------------
+
+ensure_set "$SELECTED_DISK" "Target disk"
+ensure_set "$password" "Password"
 
 # Veracrypt ----------------------------------------------------------------------------------
 
-echo -e "\n --- Veracrypt --- "
+echo "--- Veracrypt --- "
 veracrypt --text --create \
     "$SELECTED_DISK" \
     --volume-type normal \
@@ -79,4 +106,4 @@ veracrypt --text --create \
     --password "$password" \
     --quick \
     --non-interactive
-echo -e "\n --- Veracrypt --- "
+echo "--- Veracrypt --- "
