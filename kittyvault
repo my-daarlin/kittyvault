@@ -52,8 +52,29 @@ select_disk() {
     SELECTED_DISK=${disks[$index]}
 }
 
-# Main ---------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------
+# Permissions --------------------------------------------------------------------------------
 
 print_header
+if [[ $EUID -ne 0 ]]; then
+    echo "Kittyvault needs to be ran using sudo!" >&2
+    exit 1
+fi
+
+# Parameters ---------------------------------------------------------------------------------
+
 select_disk
 echo "Selected disk $SELECTED_DISK"
+read -s -p "Enter vault password: " password
+
+# Veracrypt ----------------------------------------------------------------------------------
+
+veracrypt --text --create \
+    "$SELECTED_DISK" \
+    --volume-type normal \
+    --encryption AES \
+    --hash SHA-512 \
+    --filesystem exFAT \
+    --password "$password" \
+    --quick \
+    --non-interactive
