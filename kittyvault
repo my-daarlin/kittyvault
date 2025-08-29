@@ -2,10 +2,46 @@
 
 set -euo pipefail
 
-cat <<\EOF | lolcat
+# --------------------------------------------------------------------------------------------
+# kittyvault — Usb encrypter using veracrypt
+# --------------------------------------------------------------------------------------------
+
+# Helpers ------------------------------------------------------------------------------------
+
+# lines_to_arr() {
+#     while IFS= read -r line; do
+#         arr+=("$line")
+#     done <<<"$1"
+#     echo "${arr[@]}"
+# }
+
+# Functions ----------------------------------------------------------------------------------
+
+print_header() {
+    cat <<\EOF | lolcat
    __ ___ __  __      _   __          ____
   / //_(_) /_/ /___ _| | / /__ ___ __/ / /_
  / ,< / / __/ __/ // / |/ / _ `/ // / / __/
 /_/|_/_/\__/\__/\_, /|___/\_,_/\_,_/_/\__/
                /___/
+
 EOF
+}
+
+select_disc() {
+    discs=($(diskutil list | grep "/" | awk '{print $1}'))
+    if [[ ${#discs[@]} -eq 0 ]]; then
+        echo "No external discs found"
+        exit 1
+    fi
+    echo "Select target disc:"
+    for ((i = 0; i < ${#discs[@]}; i++)); do
+        item="${discs[$i]}"
+        echo "  $i) $item ($(diskutil info "$item" | grep "Disk Size:" | awk '{print $3  $4}'))"
+    done
+}
+
+# Main ---------------------------------------------------------------------------------------
+
+print_header
+select_disc
