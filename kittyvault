@@ -6,14 +6,23 @@ set -euo pipefail
 # kittyvault — Usb encrypter using veracrypt
 # --------------------------------------------------------------------------------------------
 
-# Helpers ------------------------------------------------------------------------------------
+SELECTED_DISK=""
 
-# lines_to_arr() {
-#     while IFS= read -r line; do
-#         arr+=("$line")
-#     done <<<"$1"
-#     echo "${arr[@]}"
-# }
+# User input ---------------------------------------------------------------------------------
+
+get_number() {
+    local num
+    local valid_num=false
+    while [[ "$valid_num" == false ]]; do
+        read -p " > " num
+        if [[ "$num" =~ ^[0-9]+$ ]] && ((num >= 0 && num < $1)); then
+            echo "$num"
+            valid_num=true
+        else
+            echo "Invalid input. Please enter a number from 0 to $(($1 - 1))"
+        fi
+    done
+}
 
 # Functions ----------------------------------------------------------------------------------
 
@@ -28,20 +37,23 @@ print_header() {
 EOF
 }
 
-select_disc() {
-    discs=($(diskutil list | grep "/" | awk '{print $1}'))
-    if [[ ${#discs[@]} -eq 0 ]]; then
-        echo "No external discs found"
+select_disk() {
+    disks=($(diskutil list | grep "external" | awk '{print $1}' || true))
+    if [[ ${#disks[@]} -eq 0 ]]; then
+        echo "No external disks found..."
         exit 1
     fi
-    echo "Select target disc:"
-    for ((i = 0; i < ${#discs[@]}; i++)); do
-        item="${discs[$i]}"
+    echo "Select target disk:"
+    for ((i = 0; i < ${#disks[@]}; i++)); do
+        item="${disks[$i]}"
         echo "  $i) $item ($(diskutil info "$item" | grep "Disk Size:" | awk '{print $3  $4}'))"
     done
+    index=$(get_number ${#disks[@]})
+    SELECTED_DISK=${disks[$index]}
 }
 
 # Main ---------------------------------------------------------------------------------------
 
 print_header
-select_disc
+select_disk
+echo "Selected disk $SELECTED_DISK"
