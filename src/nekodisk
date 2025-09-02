@@ -31,7 +31,6 @@ print_row() {
     for col in {0..4}; do
         field="${arr[$col]}"
         if [[ "${arr[0]}" == "#" || $col -eq 0 ]]; then
-            # Header row OR first column (numbers) → green
             printf " ${GREEN}%-${widths[$col]}s${RESET}${BLUE} │${RESET}" "$field"
         else
             printf " ${WHITE}%-${widths[$col]}s${RESET}${BLUE} │${RESET}" "$field"
@@ -60,7 +59,7 @@ while IFS= read -r line; do
     ident=$(echo "$line" | awk '{print $1}')
     type=$(echo "$line" | awk -F '[()]' '{print $2}')
     size=$(diskutil info "$ident" | awk -F': *' '/Disk Size/ {print $2; exit}' | awk -F' \\(' '{print $1}')
-    [[ -z "$size" ]] && size="—"
+    [[ -z "$size" ]] && size="-"
     mount=$(diskutil info "$ident" | awk -F': *' '/Mount Point/ {print $2; exit}')
     [[ -z "$mount" ]] && mount="-"
 
