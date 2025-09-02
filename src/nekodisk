@@ -1,4 +1,4 @@
-#!/opt/homebrew/bin/bash
+#!/bin/bash
 
 # --------------------------------------------------------------------------------------------
 # nekodisk - diskutil list wrapper with pretty output
@@ -17,7 +17,7 @@ RESET="\033[0m"
 print_line() {
     local left=$1 mid=$2 right=$3
     printf "${BLUE}%s" "$left"
-    for col in {0..4}; do
+    for col in $(seq 0 4); do
         printf '─%.0s' $(seq 1 $((${widths[$col]} + 2)))
         if [ $col -lt 4 ]; then
             printf "%s" "$mid"
@@ -27,9 +27,10 @@ print_line() {
 }
 
 print_row() {
-    local -n arr=$1
+    local arrname=$1
+    eval "arr=(\"\${$arrname[@]}\")"
     printf "${BLUE}│${RESET}"
-    for col in {0..4}; do
+    for col in $(seq 0 4); do
         field="${arr[$col]}"
         if [[ "${arr[0]}" == "#" || $col -eq 0 ]]; then
             printf " ${GREEN}%-${widths[$col]}s${RESET}${BLUE} │${RESET}" "$field"
@@ -88,7 +89,7 @@ done <<<"$disks"
 headers=("#" "Identifier" "Size" "Type" "Mount")
 
 widths=()
-for col in {0..4}; do
+for col in $(seq 0 4); do
     max=${#headers[$col]}
     for row in "${rows[@]}"; do
         field=$(echo "$row" | cut -d'|' -f$((col + 1)))
