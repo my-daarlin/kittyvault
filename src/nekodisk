@@ -11,46 +11,7 @@ WHITE="\033[37m"
 BOLD="\033[1m"
 RESET="\033[0m"
 
-# Grab disk data -----------------------------------------------------------------------------
-
-echo ""
-disks=$(diskutil list)
-
-if [[ -z "$disks" ]]; then
-    echo -e "${RED} ⚠️ diskutil list didn't return anything!${RESET}"
-    exit 1
-fi
-
-rows=()
-i=1
-
-while IFS= read -r line; do
-    [[ ! $line =~ ^/dev/disk ]] && continue
-
-    ident=$(echo "$line" | awk '{print $1}')
-    type=$(echo "$line" | awk -F '[()]' '{print $2}')
-    size=$(diskutil info "$ident" | awk -F': *' '/Disk Size/ {print $2; exit}' | awk -F' \\(' '{print $1}')
-    [[ -z "$size" ]] && size="—"
-    mount=$(diskutil info "$ident" | awk -F': *' '/Mount Point/ {print $2; exit}')
-    [[ -z "$mount" ]] && mount="-"
-
-    rows+=("$i|$ident|$size|$type|$mount")
-    ((i++))
-done <<<"$disks"
-
-# Headers
-headers=("#" "Identifier" "Size" "Type" "Mount")
-
-# Determine max width for each column
-widths=()
-for col in {0..4}; do
-    max=${#headers[$col]}
-    for row in "${rows[@]}"; do
-        field=$(echo "$row" | cut -d'|' -f$((col + 1)))
-        ((${#field} > max)) && max=${#field}
-    done
-    widths[$col]=$max
-done
+# Helpers ------------------------------------------------------------------------------------
 
 print_line() {
     local left=$1 mid=$2 right=$3
@@ -79,7 +40,50 @@ print_row() {
     echo
 }
 
-# Top, middle, bottom lines
+# --------------------------------------------------------------------------------------------
+# Grab disk data -----------------------------------------------------------------------------
+
+echo ""
+disks=$(diskutil list)
+
+if [[ -z "$disks" ]]; then
+    echo -e "${RED} ⚠️ diskutil list didn't return anything!${RESET}"
+    exit 1
+fi
+
+rows=()
+i=1
+
+while IFS= read -r line; do
+    [[ ! $line =~ ^/dev/disk ]] && continue
+
+    ident=$(echo "$line" | awk '{print $1}')
+    type=$(echo "$line" | awk -F '[()]' '{print $2}')
+    size=$(diskutil info "$ident" | awk -F': *' '/Disk Size/ {print $2; exit}' | awk -F' \\(' '{print $1}')
+    [[ -z "$size" ]] && size="—"
+    mount=$(diskutil info "$ident" | awk -F': *' '/Mount Point/ {print $2; exit}')
+    [[ -z "$mount" ]] && mount="-"
+
+    rows+=("$i|$ident|$size|$type|$mount")
+    ((i++))
+done <<<"$disks"
+
+# Calculate table ----------------------------------------------------------------------------
+
+headers=("#" "Identifier" "Size" "Type" "Mount")
+
+widths=()
+for col in {0..4}; do
+    max=${#headers[$col]}
+    for row in "${rows[@]}"; do
+        field=$(echo "$row" | cut -d'|' -f$((col + 1)))
+        ((${#field} > max)) && max=${#field}
+    done
+    widths[$col]=$max
+done
+
+# Print table --------------------------------------------------------------------------------
+
 print_line "┌" "┬" "┐"
 printf "${BOLD}"
 print_row headers
