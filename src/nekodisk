@@ -4,6 +4,7 @@
 # nekodisk - diskutil list wrapper with pretty output
 # --------------------------------------------------------------------------------------------
 
+PURPLE="\033[0;35m"
 RED="\033[31m"
 BLUE="\033[34m"
 GREEN="\033[32m"
@@ -33,7 +34,11 @@ print_row() {
         if [[ "${arr[0]}" == "#" || $col -eq 0 ]]; then
             printf " ${GREEN}%-${widths[$col]}s${RESET}${BLUE} │${RESET}" "$field"
         else
-            printf " ${WHITE}%-${widths[$col]}s${RESET}${BLUE} │${RESET}" "$field"
+            if [ $col -eq 1 ]; then
+                printf " \033[3m${PURPLE}%-${widths[$col]}s${RESET}${BLUE} │${RESET}" "$field"
+            else
+                printf " ${WHITE}%-${widths[$col]}s${RESET}${BLUE} │${RESET}" "$field"
+            fi
         fi
     done
     echo
