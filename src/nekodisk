@@ -32,7 +32,7 @@ while IFS= read -r line; do
     size=$(diskutil info "$ident" | awk -F': *' '/Disk Size/ {print $2; exit}' | awk -F' \\(' '{print $1}')
     [[ -z "$size" ]] && size="—"
     mount=$(diskutil info "$ident" | awk -F': *' '/Mount Point/ {print $2; exit}')
-    [[ -z "$mount" ]] && mount="—"
+    [[ -z "$mount" ]] && mount="-"
 
     rows+=("$i|$ident|$size|$type|$mount")
     ((i++))
