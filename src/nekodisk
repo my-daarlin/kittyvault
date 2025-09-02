@@ -99,7 +99,7 @@ done
 
 # Print table --------------------------------------------------------------------------------
 
-print_line "┌" "┬" "┐"
+print_line "╭" "┬" "╮"
 printf "${BOLD}"
 print_row headers
 printf "${RESET}"
@@ -109,4 +109,4 @@ for row in "${rows[@]}"; do
     fields=("$f1" "$f2" "$f3" "$f4" "$f5")
     print_row fields
 done
-print_line "└" "┴" "┘"
+print_line "╰" "┴" "╯"
