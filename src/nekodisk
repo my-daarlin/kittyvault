@@ -45,6 +45,16 @@ print_row() {
 }
 
 # --------------------------------------------------------------------------------------------
+# Flags --------------------------------------------------------------------------------------
+
+only_external=0
+while getopts "e" opt; do
+    case $opt in
+    e) only_external=1 ;;
+    esac
+done
+shift $((OPTIND - 1))
+
 # Grab disk data -----------------------------------------------------------------------------
 
 echo ""
@@ -62,6 +72,7 @@ while IFS= read -r line; do
     [[ ! $line =~ ^/dev/disk ]] && continue
 
     ident=$(echo "$line" | awk '{print $1}')
+    [[ $only_external -eq 1 && -z $(diskutil info "$ident" | grep External) ]] && continue
     type=$(echo "$line" | awk -F '[()]' '{print $2}')
     size=$(diskutil info "$ident" | awk -F': *' '/Disk Size/ {print $2; exit}' | awk -F' \\(' '{print $1}')
     [[ -z "$size" ]] && size="-"
